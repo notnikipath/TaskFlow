@@ -1,0 +1,170 @@
+﻿services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: taskflow-api-gateway
+    env_file: .env
+    ports:
+      - "8280:8200"
+    depends_on:
+      - project-service
+      - task-service
+      - resource-service
+      - risk-service
+      - analytics-service
+      - notification-service
+      - storage-service
+    networks: [taskflow-net]
+
+  project-service:
+    build:
+      context: .
+      dockerfile: project-service/Dockerfile
+    container_name: taskflow-project
+    env_file: .env
+    ports:
+      - "31061:8201"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks: [taskflow-net]
+
+  task-service:
+    build:
+      context: .
+      dockerfile: task-service/Dockerfile
+    container_name: taskflow-task
+    env_file: .env
+    ports:
+      - "31062:8202"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    networks: [taskflow-net]
+
+  resource-service:
+    build:
+      context: .
+      dockerfile: resource-service/Dockerfile
+    container_name: taskflow-resource
+    env_file: .env
+    ports:
+      - "31060:8203"
+    depends_on:
+      - postgres
+      - redis
+    networks: [taskflow-net]
+
+  risk-service:
+    build:
+      context: .
+      dockerfile: risk-service/Dockerfile
+    container_name: taskflow-risk
+    env_file: .env
+    ports:
+      - "31059:8204"
+    depends_on:
+      - postgres
+    networks: [taskflow-net]
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
+    container_name: taskflow-analytics
+    env_file: .env
+    ports:
+      - "31063:8205"
+    depends_on:
+      - postgres
+      - redis
+    networks: [taskflow-net]
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: taskflow-notification
+    env_file: .env
+    ports:
+      - "30006:8206"
+    depends_on:
+      - rabbitmq
+    networks: [taskflow-net]
+
+  storage-service:
+    build:
+      context: .
+      dockerfile: storage-service/Dockerfile
+    container_name: taskflow-storage
+    env_file: .env
+    ports:
+      - "31065:8207"
+    depends_on:
+      - minio
+    networks: [taskflow-net]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: taskflow-frontend
+    env_file: .env
+    ports:
+      - "5175:5175"
+    depends_on:
+      - api-gateway
+    networks: [taskflow-net]
+
+  postgres:
+    image: postgres:16
+    container_name: taskflow-postgres
+    environment:
+      POSTGRES_DB: taskflow
+      POSTGRES_USER: taskflow
+      POSTGRES_PASSWORD: taskflow
+    ports:
+      - "55433:5432"
+    volumes:
+      - taskflow_postgres_data:/var/lib/postgresql/data
+    networks: [taskflow-net]
+
+  redis:
+    image: redis:7
+    container_name: taskflow-redis
+    ports:
+      - "6381:6379"
+    networks: [taskflow-net]
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: taskflow-rabbitmq
+    ports:
+      - "5674:5672"
+      - "15674:15672"
+    networks: [taskflow-net]
+
+  minio:
+    image: minio/minio:RELEASE.2025-01-20T14-49-07Z
+    container_name: taskflow-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "32138:9000"
+      - "31064:9001"
+    volumes:
+      - taskflow_minio_data:/data
+    networks: [taskflow-net]
+
+networks:
+  taskflow-net:
+    driver: bridge
+
+volumes:
+  taskflow_postgres_data:
+  taskflow_minio_data:
