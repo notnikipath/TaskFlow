@@ -23,12 +23,12 @@ export function DashboardPage() {
       <header className="hero">
         <div>
           <p className="eyebrow">TaskFlow Intelligent Assistant</p>
-          <h1>Project Orchestration Center</h1>
+          <h1>Project workspace</h1>
           <p className="sub">Manage tasks, predict deadlines, and balance team load in one flow.</p>
         </div>
         <div className="header-controls">
-          <input value={projectId} onChange={(e) => dispatch(setProjectId(e.target.value))} placeholder="Project ID" />
-          <button onClick={() => dispatch(fetchDashboard(projectId))}>Refresh</button>
+          <input aria-label="Project ID" value={projectId} onChange={(e) => dispatch(setProjectId(e.target.value))} placeholder="Project ID" />
+          <button disabled={status === "loading"} onClick={() => dispatch(fetchDashboard(projectId))}>Refresh</button>
           <button className="ghost" onClick={() => dispatch(toggleTheme())}>Theme</button>
         </div>
       </header>
@@ -43,7 +43,7 @@ export function DashboardPage() {
       <section className="panel">
         <div className="panel-head">
           <h2>Kanban Snapshot</h2>
-          <p>Status: {status}</p>
+          <p role="status" aria-live="polite">Status: {status}</p>
         </div>
         {error ? <p className="error">{error}</p> : <TaskBoard columns={board?.data || {}} />}
       </section>

@@ -256,7 +256,7 @@ async def workflow_project_with_task(request: WorkflowProjectTaskRequest) -> dic
 
 
 @app.get("/dashboard/{project_id}")
-async def project_dashboard(project_id: str, actor_role: Role = Role.TEAM_LEAD) -> dict[str, Any]:
+async def project_dashboard(project_id: str, actor_role: Role = Role.PROJECT_MANAGER) -> dict[str, Any]:
     urls = _service_urls()
     timeout = httpx.Timeout(15.0, connect=4.0)
     async with httpx.AsyncClient(timeout=timeout) as client:
